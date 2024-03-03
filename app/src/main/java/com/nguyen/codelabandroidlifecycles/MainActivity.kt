@@ -1,33 +1,33 @@
 package com.nguyen.codelabandroidlifecycles
 
 import android.os.Bundle
-import android.os.SystemClock
-import android.widget.Chronometer
+import android.util.Log
+import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var liveDataTimerViewModel: LiveDataTimerViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // The ViewModelStore provides a new ViewModel or one previously created.
-        val chronometerViewModel = ViewModelProvider(this)[ChronometerViewModel::class.java]
+        liveDataTimerViewModel = ViewModelProvider(this)[LiveDataTimerViewModel::class.java]
 
-        // Get the chronometer reference
-        val chronometer = findViewById<Chronometer>(R.id.chronometer)
+        subscribe()
+    }
 
-        if (chronometerViewModel.startTime == null) {
-            // If the start date is not defined, it's a new ViewModel so set it.
-            val startTime = SystemClock.elapsedRealtime()
-            chronometerViewModel.startTime = startTime
-            chronometer.base = startTime
-        } else {
-            // Otherwise the ViewModel has been retained, set the chronometer's base to the original
-            // starting time.
-            chronometer.base = chronometerViewModel.startTime!!
+    private fun subscribe() {
+        val elapsedTimeObserver = Observer<Long> { value ->
+            val newText = resources.getString(R.string.seconds, value)
+            (findViewById<View>(R.id.timer_textview) as TextView).text = newText
+            Log.d("ChronoActivity3", "Updating timer")
         }
 
-        chronometer.start()
+        // observe the ViewModel's elapsed time
+        liveDataTimerViewModel.elapsedTime.observe(this, elapsedTimeObserver)
     }
 }
